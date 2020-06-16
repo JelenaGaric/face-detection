@@ -49,8 +49,6 @@ def train(train_image_paths, train_image_labels):
         gray = img.copy()
         # detekcija svih lica na grayscale slici
         rects = detector(gray, 1)
-        # detekcija svih lica na grayscale slici
-        rects = detector(gray, 1)
 
         # iteriramo kroz sve detekcije korak 1.
         for (i, rect) in enumerate(rects):
@@ -80,20 +78,25 @@ def train(train_image_paths, train_image_labels):
 
     x = np.array(inputs)
     y = np.array(labels)
-
+    
+    #ulaz pogodan za mrezu
     x_train = reshape_data(x)
 
+    #SVM klasifikator
     clf_svm = SVC(kernel='linear', probability=True)
     clf_svm = clf_svm.fit(x_train, y)
 
     y_train_pred = clf_svm.predict(x_train)
-
+    
+    #cuvanje tezina mreze u joblib fajl
     dump(clf_svm, 'svm.joblib')
 
     return clf_svm
 
 def train_or_load_facial_expression_recognition_model(train_image_paths, train_image_labels):
     clf_svm = load('svm.joblib')
+   
+    #ukoliko tezine nisu ucitane, trening zapocinje
     if clf_svm == None:
         clf_svm = train(train_image_paths, train_image_labels)
 
@@ -109,7 +112,8 @@ def extract_facial_expression_from_image(trained_model, image_path):
     img = load_image(image_path)
     gray = img.copy()
     rects = detector(gray, 1)
-
+    
+    #pronalazenje ROI (regions of interest)
     for (i, rect) in enumerate(rects):
         shape = predictor(gray, rect)
         shape = face_utils.shape_to_np(shape)  # konverzija u NumPy niz
